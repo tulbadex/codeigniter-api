@@ -1,4 +1,57 @@
-# CodeIgniter 4 Application Starter
+# CodeIgniter 4 API with JWT Authentication and Email Functionality
+
+This is a CodeIgniter 4 application that provides a RESTful API with JWT authentication and email functionality.
+
+## Requirements
+
+- PHP 8.1 or higher
+- Composer
+- CodeIgniter 4
+
+## Installation
+
+1. **Clone the repository:**
+
+   ```sh
+   git clone https://github.com/tulbadex/codeigniter-api.git
+   cd codeigniter-api
+   ```
+2. **Install dependencies**
+
+    ```sh
+    composer install
+    ```
+
+3. **Copy the .env file**
+
+    ```sh
+    cp .env.example .env
+    ```
+
+4. **Set up your environment variables in the .env file:**
+
+    ```sh
+        # Database settings
+        database.default.hostname = localhost
+        database.default.database = your_database
+        database.default.username = your_username
+        database.default.password = your_password
+        database.default.DBDriver = MySQLi
+
+        # Email settings
+        email.fromEmail = your-email@example.com
+        email.fromName = Your Name
+        email.SMTPHost = smtp.example.com
+        email.SMTPUser = your-email@example.com
+        email.SMTPPass = your-email-password
+        email.SMTPPort = 587
+        email.SMTPCrypto = tls
+
+        # JWT settings
+        JWT_SECRET = your_secret_key
+    ```
+5. **Run database migrations:**
+
 
 ## What is CodeIgniter?
 
