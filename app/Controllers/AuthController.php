@@ -6,6 +6,7 @@ use App\Models\UserModel;
 use App\Models\PasswordResetModel;
 use CodeIgniter\RESTful\ResourceController;
 use Firebase\JWT\JWT;
+use Ramsey\Uuid\Uuid;
 
 helper('jwt_helper');
 helper('email_helper');
@@ -25,19 +26,30 @@ class AuthController extends ResourceController
             return $this->fail($this->validator->getErrors());
         }
 
-        $userModel = new UserModel();
+        // $userModel = new UserModel();
         $userData = [
+            'uuid' => Uuid::uuid4()->toString(),
             'username' => $this->request->getVar('username'),
             'password' => password_hash($this->request->getVar('password'), PASSWORD_DEFAULT),
             'email' => $this->request->getVar('email'),
-            'role' => 'user' // Set the default role here
+            'role' => 'user', // Set the default role here
+            'created_at' => date('Y-m-d H:i:s'), // Set the created_at field 
+            'updated_at' => date('Y-m-d H:i:s')
         ];
 
         // Insert user data and handle errors
-        if (!$userModel->insert($userData)) {
+        /* if (!$userModel->insert($userData)) {
             return $this->fail($userModel->errors());
         }
 
+        return $this->respondCreated(['message' => 'User registered successfully']); */
+
+        // Use Active Record to insert user data and handle errors 
+        $db = \Config\Database::connect(); 
+        $builder = $db->table('users'); 
+        if (!$builder->insert($userData)) { 
+            return $this->fail($db->error()); 
+        } 
         return $this->respondCreated(['message' => 'User registered successfully']);
     }
 
@@ -83,20 +95,20 @@ class AuthController extends ResourceController
         // Get the referer domain 
         $referer = $_SERVER['HTTP_REFERER'] ?? ''; 
         $protocol = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off' || $_SERVER['SERVER_PORT'] == 443) ? "https://" : "http://"; 
-        $domain = parse_url($referer, PHP_URL_HOST) ?: 'your-domain.com'; 
+        $domain = parse_url($referer, PHP_URL_HOST) ?: 'http://localhost:8080'; 
         
         // Construct the reset password link 
         $resetLink = $protocol . $domain . '/reset-password?token=' . $token;
 
         // Load the email library 
-        $emailService = \Config\Services::email();
+        /* $emailService = \Config\Services::email();
 
         // Set email parameters 
         $emailService->setTo($email); 
         // $emailService->setFrom('tulbadex@gmail.com', 'Book Store');
         $emailService->setSubject('Password Reset Request'); 
         // $message = "Please click the following link to reset your password: <a href='$resetLink'>Reset Password</a>";
-        $emailService->setMessage("Please click the following link to reset your password: <a href='$resetLink'>Reset Password</a>"); 
+        $emailService->setMessage("Please click the following link to reset your password: <a href='$resetLink'>Reset Password</a>");
         // Send the email 
         if (!$emailService->send()) { 
             log_message('error', $emailService->printDebugger(['headers']));
@@ -104,6 +116,14 @@ class AuthController extends ResourceController
         }
 
         // Send email (for now, we'll just return the token for testing)
+        return $this->respond(['message' => 'Password reset link sent', 'token' => $token]); */
+
+        // Send email using PHPMailer
+        $subject = 'Password Reset Request'; 
+        $message = "Please click the following link to reset your password: <a href='$resetLink'>Reset Password</a>"; 
+        if (!sendEmail($email, $subject, $message)) { 
+            return $this->fail('Failed to send email'); 
+        } 
         return $this->respond(['message' => 'Password reset link sent', 'token' => $token]);
     }
 
